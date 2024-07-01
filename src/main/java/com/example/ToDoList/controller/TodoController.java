@@ -1,12 +1,13 @@
 // src/main/java/com/example/ToDoList/controller/TodoController.java
 package com.example.ToDoList.controller;
 
-import com.example.ToDoList.model.Todo;
+import com.example.ToDoList.dto.TodoDTO;
+import com.example.ToDoList.dto.CategoryDTO;
+import com.example.ToDoList.dto.CommentDTO;
 import com.example.ToDoList.service.TodoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,42 +20,66 @@ public class TodoController {
     private TodoService todoService;
 
     @GetMapping
-    public List<Todo> getAllTodos() {
+    public List<TodoDTO> getAllTodos() {
         return todoService.getAllTodos();
     }
 
     @GetMapping("/{id}")
-    public Optional<Todo> getTodoById(@PathVariable Long id) {
+    public Optional<TodoDTO> getTodoById(@PathVariable Long id) {
         return todoService.getTodoById(id);
     }
 
     @PostMapping
-    public Todo createTodo(@RequestBody Todo todo) {
-        validateDueDate(todo.getDueDate());
-        return todoService.saveTodo(todo);
+    public TodoDTO createTodo(@RequestBody TodoDTO todoDTO) {
+        return todoService.saveTodoDTO(todoDTO);
     }
 
     @PutMapping("/{id}")
-    public Todo updateTodo(@PathVariable Long id, @RequestBody Todo updatedTodo) {
-        validateDueDate(updatedTodo.getDueDate());
-        return todoService.updateTodo(id, updatedTodo);
+    public TodoDTO updateTodo(@PathVariable Long id, @RequestBody TodoDTO updatedTodoDTO) {
+        return todoService.updateTodoDTO(id, updatedTodoDTO);
     }
 
     @PutMapping("/{id}/complete")
-    public Todo markTodoAsCompleted(@PathVariable Long id) {
-        Optional<Todo> optionalTodo = todoService.getTodoById(id);
-        if (optionalTodo.isPresent()) {
-            Todo todo = optionalTodo.get();
-            todo.setCompleted(true);
-            return todoService.saveTodo(todo);
+    public TodoDTO markTodoAsCompleted(@PathVariable Long id) {
+        Optional<TodoDTO> optionalTodoDTO = todoService.getTodoById(id);
+        if (optionalTodoDTO.isPresent()) {
+            TodoDTO todoDTO = optionalTodoDTO.get();
+            todoDTO.setCompleted(true);
+            return todoService.saveTodoDTO(todoDTO);
         } else {
             throw new RuntimeException("Todo not found with id " + id);
         }
     }
 
-    private void validateDueDate(Date dueDate) {
-        if (dueDate != null && dueDate.before(new Date())) {
-            throw new IllegalArgumentException("Due date cannot be in the past");
+    @GetMapping("/categories")
+    public List<CategoryDTO> getAllCategories() {
+        return todoService.getAllCategories();
+    }
+
+    @PostMapping("/categories")
+    public CategoryDTO createCategory(@RequestBody CategoryDTO categoryDTO) {
+        return todoService.saveCategoryDTO(categoryDTO);
+    }
+
+    @PostMapping("/{id}/comments")
+    public CommentDTO addComment(@PathVariable Long id, @RequestBody CommentDTO commentDTO) {
+        Optional<TodoDTO> optionalTodoDTO = todoService.getTodoById(id);
+        if (optionalTodoDTO.isPresent()) {
+            commentDTO.setTodoId(id);
+            return todoService.saveCommentDTO(commentDTO);
+        } else {
+            throw new RuntimeException("Todo not found with id " + id);
         }
     }
+
+    @GetMapping("/{id}/comments")
+    public List<CommentDTO> getCommentsByTodoId(@PathVariable Long id) {
+
+        return todoService.getCommentsByTodoId(id);
+    }
+    @DeleteMapping("/{id}")
+    public void deleteTodoById(@PathVariable Long id) {
+        todoService.deleteTodoById(id);
+    }
+
 }

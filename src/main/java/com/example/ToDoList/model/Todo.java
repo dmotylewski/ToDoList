@@ -1,12 +1,11 @@
+// src/main/java/com/example/ToDoList/model/Todo.java
 package com.example.ToDoList.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
-
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 public class Todo {
@@ -15,11 +14,19 @@ public class Todo {
     private Long id;
     private String title;
     private String description;
+    @Temporal(TemporalType.DATE)
     private Date dueDate;
     private boolean completed;
 
-    // Getters and Setters
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
 
+    @OneToMany(mappedBy = "todo", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
+
+    // Getters and Setters
+    // (Include getters and setters for category and comments)
     public Long getId() {
         return id;
     }
@@ -58,5 +65,21 @@ public class Todo {
 
     public void setCompleted(boolean completed) {
         this.completed = completed;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public List<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(List<Comment> comments) {
+        this.comments = comments;
     }
 }
